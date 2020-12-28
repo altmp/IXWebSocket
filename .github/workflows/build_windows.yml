@@ -36,8 +36,8 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: ixwebsocket-debug
-          path: ./build/Debug/
+          name: ixwebsocket-release
+          path: ./build/Release/
 
       - uses: actions/upload-artifact@v2
         with:

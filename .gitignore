@@ -6,3 +6,5 @@ site/
 ws/.certs/
 ws/.srl
 ixhttpd
+lib/
+bin/
