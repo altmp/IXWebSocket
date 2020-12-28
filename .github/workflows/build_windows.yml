@@ -32,11 +32,17 @@ jobs:
           cmake -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_CXX_COMPILER=cl.exe -DUSE_OPEN_SSL=1 -DUSE_TLS=1 -DCMAKE_BUILD_TYPE=Release ..
 
       - run: cmake --build build --config Release
+      - run: cmake --build build --config Debug
 
       - uses: actions/upload-artifact@v2
         with:
-          name: ixwebsocket-release
-          path: ./build/Release/
+          name: ixwebsocket-debug
+          path: ./build/Debug/
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ixwebsocket-debug
+          path: ./build/Debug/
 
   create-release:
     name: Create GitHub Release
@@ -55,15 +61,22 @@ jobs:
           name: vcpkg-bin
           path: bin
 
-      - name: Download ixwebsocket artifacts
+      - name: Download ixwebsocket release artifacts
         uses: actions/download-artifact@v2
         with:
           name: ixwebsocket-release
-          path: lib
+          path: lib/release
+
+      - name: Download ixwebsocket debug artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: ixwebsocket-debug
+          path: lib/debug
       
       - name: Zip artifacts
         run: |
-          zip -r -j release-lib lib/zlib.lib lib/libssl.lib lib/libcrypto.lib lib/zlib.lib lib/ixwebsocket.lib
+          zip -r -j release-lib lib/zlib.lib lib/libssl.lib lib/libcrypto.lib lib/zlib.lib lib/release/ixwebsocket.lib
+          zip -r -j debug-lib lib/zlib.lib lib/libssl.lib lib/libcrypto.lib lib/zlib.lib lib/debug/ixwebsocket.lib
           zip -r -j release-dll bin/libcrypto-1_1-x64.dll bin/libssl-1_1-x64.dll bin/zlib1.dll
       
       - name: Get current date
@@ -79,7 +92,7 @@ jobs:
           tag_name: ${{ steps.date.outputs.date }}
           release_name: ${{ steps.date.outputs.date }}
 
-      - name: Upload static libraries
+      - name: Upload release static libraries
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -87,6 +100,16 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./release-lib.zip
           asset_name: release-lib.zip
+          asset_content_type: application/zip
+
+      - name: Upload debug static libraries
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./debug-lib.zip
+          asset_name: debug-lib.zip
           asset_content_type: application/zip
 
       - name: Upload dynamic libraries
